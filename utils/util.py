@@ -75,10 +75,10 @@ def save_model(config):
     timestamp_end = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
 
     output_name = '{}_output'.format(timestamp_end)
-    logging.debug('output_name {}'.format(output_name))
+    logging.info('output_name {}'.format(output_name))
 
     shutil.move(config.output_path, output_name)
-    logging.debug('Model Saved {}', output_name)
+    logging.info('Model Saved {}', output_name)
 
 
 def signal_handler(config):
@@ -95,7 +95,7 @@ def signal_handler(config):
             exit(0)
         else:
             timestamp_end = datetime.datetime.now().strftime("%Y-%m-%d-%H_%M_%S")
-            logging.debug('timestamp_end {}'.format(timestamp_end))
+            logging.info('timestamp_end {}'.format(timestamp_end))
             exit(0)
 
     signal.signal(signal.SIGINT, sig_hdlr)

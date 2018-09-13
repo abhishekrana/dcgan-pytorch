@@ -40,8 +40,9 @@ def main(config, resume):
 
 
     ## Logger
-    utils.logger_init(config, logging.DEBUG)
-    logging.debug('config {}'.format(config))
+    # utils.logger_init(config, logging.DEBUG)
+    utils.logger_init(config, logging.INFO)
+    logging.info('config {}'.format(config))
 
 
     ## Register signal handler
@@ -93,7 +94,7 @@ def main(config, resume):
     # trainer.test()
 
     config['timestamp_end'] = datetime.datetime.fromtimestamp(time.time()).strftime('%Y-%m-%d_%H-%M-%S')
-    logging.debug('timestamp_end {}'.format(config['timestamp_end']))
+    logging.info('timestamp_end {}'.format(config['timestamp_end']))
 
 
 if __name__ == '__main__':

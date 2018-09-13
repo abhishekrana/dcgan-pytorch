@@ -19,14 +19,14 @@ class Model():
         self.netG.apply(weights_init)
         if config['netG'] != '':
             self.netG.load_state_dict(torch.load(self.config['netG']))
-        logging.debug(self.netG)
+        logging.info(self.netG)
 
         # Discriminator
         self.netD = Discriminator(self.config).to(self.device)
         self.netD.apply(weights_init)
         if config['netD'] != '':
             self.netD.load_state_dict(torch.load(self.config['netD']))
-        logging.debug(self.netD)
+        logging.info(self.netD)
 
         ## Loss
         self.criterion = nn.BCELoss()

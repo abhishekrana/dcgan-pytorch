@@ -92,9 +92,9 @@ class DataHandler():
         config['data_handler']['class_names'] = class_names = image_datasets['train'].classes
         config['data_handler']['num_classes'] = num_classes = len(class_names)
 
-        logging.debug('dataset_sizes {}'.format(dataset_sizes))
-        logging.debug('class_names {}'.format(class_names))
-        logging.debug('num_classes {}'.format(num_classes))
+        logging.info('dataset_sizes {}'.format(dataset_sizes))
+        logging.info('class_names {}'.format(class_names))
+        logging.info('num_classes {}'.format(num_classes))
 
 
         ## Get class weights for calculating weighted loss

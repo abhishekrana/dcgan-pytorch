@@ -1,14 +1,15 @@
 {
     "name": "exp_cifar10",
-    "cuda": false,
+    "cuda": true,
     "gpu": 0,
 	"output_dir":"output",
 	"seed": 7,
 
     "data_handler": {
         "data_dir": "datasets/",
-        "data_name": "cifar10",
-        "batch_size": 2,
+        "data_name": "norb",
+        "_batch_size": 64,
+        "batch_size": 2048,
         "shuffle": true,
 		"num_workers": 4
     },
@@ -41,7 +42,7 @@
     "loss": "my_loss",
     "metrics": ["my_metric", "my_metric2"],
     "trainer": {
-        "epochs": 25,
+        "epochs": 1000,
         "save_dir": "saved/",
         "save_freq": 1,
         "verbosity": 2,

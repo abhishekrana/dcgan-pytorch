@@ -71,114 +71,25 @@ class Trainer():
                 self.model.optimizerG.step()
                 
                 # TODO: dataloader
-                print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
-                      % (epoch, self.epochs, i, len(self.dataloaders['train']),
+                # logging.info('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
+                logging.info('[{}/{}][{}/{}] Loss_D: {:.4} Loss_G: {:.4} D(x): {:.4} D(G(z)): {:.4} / {:.4}'
+                      .format(epoch, self.epochs, i, len(self.dataloaders['train']),
                          errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
-                if i % 100 == 0:
-                    vutils.save_image(real_cpu,
-                            '%s/real_samples.png' % self.config['output_images_path'],
-                            normalize=True)
-                    fake = self.model.netG(self.fixed_noise)
-                    vutils.save_image(fake.detach(),
-                            '%s/fake_samples_epoch_%03d.png' % (self.config['output_images_path'], epoch),
-                            normalize=True)
+                
+            if epoch % 10 == 0:
+                vutils.save_image(real_cpu,
+                        '%s/real_samples.png' % self.config['output_images_path'],
+                        normalize=True)
+                fake = self.model.netG(self.fixed_noise)
+                vutils.save_image(fake.detach(),
+                        '%s/fake_samples_epoch_%03d.png' % (self.config['output_images_path'], epoch),
+                    normalize=True)
 
             # Save checkpoints
-            torch.save(self.model.netG.state_dict(), '%s/netG_epoch_%d.pth' % (self.config['checkpoint_path'], epoch))
-            torch.save(self.model.netD.state_dict(), '%s/netD_epoch_%d.pth' % (self.config['checkpoint_path'], epoch))
+            if epoch % 50 == 0:
+                torch.save(self.model.netG.state_dict(), '%s/netG_epoch_%d.pth' % (self.config['checkpoint_path'], epoch))
+                torch.save(self.model.netD.state_dict(), '%s/netD_epoch_%d.pth' % (self.config['checkpoint_path'], epoch))
 
-
-
-
-    # def train2(self):
-    #     since = time.time()
-
-    #     best_model_wts = copy.deepcopy(self.model.state_dict())
-    #     best_acc = 0.0
-    #     best_loss = 100000.0
-
-    #     for epoch in range(self.epochs):
-    #         logging.debug('Epoch {}/{}'.format(epoch, self.epochs - 1))
-    #         logging.debug('-' * 10)
-
-    #         ## Each epoch has a training and validation phase
-    #         for phase in ['train', 'val', 'test']:
-    #             if phase == 'train':
-    #                 self.scheduler.step()
-    #                 self.model.train()  # Set model to training mode
-    #             else:
-    #                 self.model.eval()   # Set model to evaluate mode
-
-    #             running_loss = 0.0
-    #             running_corrects = 0
-    #             running_images = 0
-
-    #             ## Iterate over data.
-    #             for step, (inputs, labels) in enumerate(self.dataloaders[phase]):
-
-    #                 inputs = inputs.to(self.device)
-    #                 labels = labels.to(self.device)
-
-    #                 ## zero the parameter gradients
-    #                 self.optimizer.zero_grad()
-
-    #                 ## forward
-    #                 ## track history if only in train
-    #                 with torch.set_grad_enabled(phase == 'train'):
-    #                     outputs = self.model(inputs)
-    #                     # Returns the maximum value of each row of the input tensor in the given dimension dim. 
-    #                     # The second return value is the index location of each maximum value found (argmax).
-    #                     _, preds = torch.max(outputs, 1)
-    #                     loss = self.criterion(outputs, labels)
-
-    #                     ## backward + optimize only if in training phase
-    #                     if phase == 'train':
-    #                         loss.backward()
-    #                         self.optimizer.step()
-
-    #                 ## Statistics
-    #                 running_loss += loss.item() * inputs.size(0)
-    #                 running_corrects += torch.sum(preds == labels.data)
-
-    #                 running_images = (step+1)*self.batch_size
-    #                 logging.debug('{} Step:{}/{} Loss: {:.4f} Acc: {:.4f}'.format(
-    #                     phase, step, int(self.dataset_sizes[phase]/self.batch_size), 
-    #                     running_loss/running_images, running_corrects.double()/running_images))
-    #                 # logging.debug('Step:', step, '/', int(self.dataset_sizes[phase]/self.batch_size), 
-    #                 #       running_loss/running_images, running_corrects.double()/running_corrects)
-
-    #             epoch_loss = running_loss / self.dataset_sizes[phase]
-    #             epoch_acc = running_corrects.double() / self.dataset_sizes[phase]
-    #             self.writer.add_scalar(phase + '/Loss/epoch_loss', epoch_loss, epoch)
-    #             self.writer.add_scalar(phase + '/Accuracy/epoch_accuracy', epoch_acc, epoch)
-
-
-    #             logging.debug('{} Loss: {:.4f} Acc: {:.4f}'.format(phase, epoch_loss, epoch_acc))
-
-    #             ## Deep copy the model
-    #             if phase == 'val':
-    #                 if epoch_acc > best_acc:
-    #                     best_acc = epoch_acc
-    #                     best_model_prefix = 'acc'
-    #                 if epoch_loss < best_loss:
-    #                     best_loss = epoch_loss
-    #                     best_model_prefix = 'loss'
-
-    #                 best_model_wts = copy.deepcopy(self.model.state_dict())
-    #                 best_model_name = best_model_prefix + '-epoch-'+str(epoch) + '_loss-'+str(np.round(epoch_loss, 3)) + '_acc-'+str(np.round(epoch_acc.cpu().numpy(), 3))
-    #                 with open(os.path.join(self.config['checkpoint_path'], 'model-' + best_model_name + '.pkl'), 'wb') as fp:
-    #                     pickle.dump(best_model_wts, fp)
-    #                 logging.debug('best_model_name {}'.format(best_model_name))
-
-    #                 torch.save(self.model.state_dict(), os.path.join(self.config['checkpoint_path'], 'model-' + best_model_name + '.pth' ))
-    #                 torch.save(self.optimizer.state_dict(), os.path.join(self.config['checkpoint_path'], 'optimizer-' + best_model_name + '.pth' ))
-
-    #                 # model.load_state_dict(torch.load(os.path.join(self.config['checkpoint_path'], 'model-' + best_model_name + '.pth')))
-    #                 # model.load_state_dict(torch.load(os.path.join(self.config['checkpoint_path'], 'optimizer-' + best_model_name + '.pth')))
-
-    #         logging.debug(' ')
-
-    #     self.config['best_model_checkpoint'] = best_model_wts
 
     #     time_elapsed = time.time() - since
     #     logging.debug('Training complete in {:.0f}m {:.0f}s'.format(
