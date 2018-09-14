@@ -1,5 +1,5 @@
 {
-    "name": "exp_cifar10",
+    "name": "exp_norb_human",
     "cuda": true,
     "gpu": 0,
 	"output_dir":"output",
@@ -7,7 +7,7 @@
 
     "data_handler": {
         "data_dir": "datasets/",
-        "data_name": "norb",
+        "data_name": "norb_human",
         "_batch_size": 64,
         "batch_size": 2048,
         "shuffle": true,
@@ -30,8 +30,8 @@
 	"nc": 3,
 	"ngpu": 1,
 
-	"netG": "",
-	"netD": "",
+	"netG": "results_norb_airplane_2k_epochs/exp_norb_airplane/2018-09-14_03-01-47_result/checkpoints/netG_epoch_950.pth",
+	"netD": "results_norb_airplane_2k_epochs/exp_norb_airplane/2018-09-14_03-01-47_result/checkpoints/netD_epoch_950.pth",
 
     "optimizer_type": "Adam",
     "optimizer": {

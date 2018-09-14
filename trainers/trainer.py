@@ -18,8 +18,8 @@ class Trainer():
         self.dataloaders = dataloaders
         self.model = model
         # self.scheduler = model.exp_lr_scheduler
-        self.epochs = config['trainer']['epochs']
 
+        self.epochs = config['trainer']['epochs']
         self.writer = config['writer']
         self.device = config['device']
         self.batch_size = config['data_handler']['batch_size']
@@ -33,7 +33,9 @@ class Trainer():
 
     def train(self):
         for epoch in range(self.epochs):
-            for i, data in enumerate(self.dataloaders['train'], 0):
+            epoch_start_time = time.time()
+
+            for step, data in enumerate(self.dataloaders['train'], 0):
                 ############################
                 # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
                 ###########################
@@ -73,63 +75,44 @@ class Trainer():
                 # TODO: dataloader
                 # logging.info('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
                 logging.info('[{}/{}][{}/{}] Loss_D: {:.4} Loss_G: {:.4} D(x): {:.4} D(G(z)): {:.4} / {:.4}'
-                      .format(epoch, self.epochs, i, len(self.dataloaders['train']),
+                      .format(epoch, self.epochs, step, len(self.dataloaders['train']),
                          errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
-                
-            if epoch % 10 == 0:
-                vutils.save_image(real_cpu,
-                        '%s/real_samples.png' % self.config['output_images_path'],
-                        normalize=True)
-                fake = self.model.netG(self.fixed_noise)
-                vutils.save_image(fake.detach(),
-                        '%s/fake_samples_epoch_%03d.png' % (self.config['output_images_path'], epoch),
-                    normalize=True)
 
-            # Save checkpoints
+                ## Save real images
+                if epoch==0 and step==0:
+                    logging.debug('epoch {}'.format(epoch))
+                    vutils.save_image(real_cpu, '%s/real_samples.png' 
+                            % self.config['output_images_path'], normalize=True)
+                    real_img = vutils.make_grid(real_cpu, normalize=True, scale_each=True)
+                    self.writer.add_image('RealImages', real_img, epoch)
+
+
+            ## Metrics
+            # Remember to extract the scalar value by x.data[0] if x is a torch variable.
+            self.writer.add_scalar('Loss/G', errG.item(), epoch)
+            self.writer.add_scalar('Loss/D', errD.item(), epoch)
+            self.writer.add_scalar('D/x', D_x, epoch)
+            self.writer.add_scalar('D_G/z1', D_G_z1, epoch)
+            self.writer.add_scalar('D_G/z2', D_G_z2, epoch)
+                
+
+            ## Generate and save fake images
+            if epoch % 10 == 0:
+                fake = self.model.netG(self.fixed_noise)
+                vutils.save_image(fake.detach(), '%s/fake_samples_epoch_%03d.png' 
+                        % (self.config['output_images_path'], epoch), normalize=True)
+                fake_img = vutils.make_grid(fake.detach(), normalize=True, scale_each=True)
+                self.writer.add_image('FakeImages', fake_img, epoch)
+
+
+            ## Save checkpoints
             if epoch % 50 == 0:
                 torch.save(self.model.netG.state_dict(), '%s/netG_epoch_%d.pth' % (self.config['checkpoint_path'], epoch))
                 torch.save(self.model.netD.state_dict(), '%s/netD_epoch_%d.pth' % (self.config['checkpoint_path'], epoch))
 
 
-    #     time_elapsed = time.time() - since
-    #     logging.debug('Training complete in {:.0f}m {:.0f}s'.format(
-    #         time_elapsed // 60, time_elapsed % 60))
-    #     logging.debug('Best val Acc: {:4f}'.format(best_acc))
-
-
-    # def test(self):
-
-    #     if 'best_model_checkpoint' in self.config:
-    #         logging.debug('Loading best_model_checkpoint')
-    #         model_checkpoint = self.config['best_model_checkpoint']
-    #     else:
-    #         # with open(os.path.join(self.config.['checkpoint_path'], self.config['checkpoint_file']), 'rb') as fp:
-    #         with open(self.config['checkpoint_file'], 'rb') as fp:
-    #             model_checkpoint = pickle.load(fp)
-    #         logging.debug('Loading model_checkpoint {}'.format(self.config['checkpoint_file']))
-
-    #     self.model.load_state_dict(model_checkpoint)
-
-    #     self.model.eval()
-
-    #     total_labels = []
-    #     total_preds = []
-    #     with torch.no_grad():
-    #         for step, (inputs, labels) in enumerate(self.dataloaders['test']):
-    #             logging.debug('step {}'.format(step))
-    #             inputs = inputs.to(self.config['device'])
-    #             labels = labels.to(self.config['device'])
-
-    #             outputs = self.model(inputs)
-    #             _, preds = torch.max(outputs, 1)
-
-    #             labels = labels.cpu().numpy()
-
-    #             logits = outputs.cpu().numpy()
-    #             preds = np.argmax(logits, axis=1)
-
-    #             total_labels += labels.tolist()
-    #             total_preds += preds.tolist()
-
-    #         logging.debug('\nConfusionMatrix:\n{}'.format(confusion_matrix(y_true=total_labels, y_pred=total_preds)))
+            ## Epoch time
+            epoch_time = time.time() - epoch_start_time
+            self.writer.add_scalar('Performance/epoch_time', np.round(epoch_time, 2), epoch)
+            # logging.debug('Epoch time {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
 
