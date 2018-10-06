@@ -20,6 +20,10 @@ cd scripts
 ./run.sh
 ```
 
+## Results
+![alt text](https://raw.githubusercontent.com/abhishekrana/dcgan-pytorch/master/results/fake_aeroplane.png "Fake aeroplane")
+![alt text](https://raw.githubusercontent.com/abhishekrana/dcgan-pytorch/master/results/fake_human.png "Fake human")
+
 ## Acknowledgment
 https://github.com/ndrplz/small_norb
 
